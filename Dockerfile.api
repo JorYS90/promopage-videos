@@ -1,0 +1,68 @@
+# Dockerfile do BACKEND PromoVideo — Node 20 + Chromium (pra Remotion renderer)
+#
+# Build context = raiz do projeto (pra ter acesso a backend/ E remotion/).
+# Build:  docker build -f Dockerfile.api -t promovideo-api .
+# Run:    docker run -d -p 4020:4020 promovideo-api
+#
+# Renderiza vídeos usando @remotion/renderer (precisa Chromium no PATH).
+
+FROM node:20-bookworm-slim AS deps-backend
+
+# build-essentials pra compilar bindings nativos (ffmpeg-static etc)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build/backend
+COPY backend/package.json backend/package-lock.json* ./
+RUN npm ci --omit=dev
+
+# Instalar deps do Remotion separadamente (precisa pra bundlear no runtime)
+WORKDIR /build/remotion
+COPY remotion/package.json remotion/package-lock.json* ./
+RUN npm ci
+
+# ---- Stage final: runtime + Chromium ----
+FROM node:20-bookworm-slim AS runtime
+
+# Chromium + libs necessárias pro Remotion renderizar.
+# fonts-noto-color-emoji pra emojis renderizarem nos vídeos.
+# Tini pra graceful shutdown (signals).
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      tini \
+      chromium \
+      fonts-noto-color-emoji fonts-noto-cjk fonts-noto-core \
+      ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Variáveis pra Remotion encontrar o Chromium pré-instalado
+# (em vez de baixar 200MB toda vez)
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV CHROMIUM_PATH=/usr/bin/chromium
+
+# Usuário não-root
+RUN useradd -m -u 1001 promovideo
+
+WORKDIR /app
+
+# Copia código + deps já instaladas
+COPY --from=deps-backend /build/backend/node_modules ./backend/node_modules
+COPY --from=deps-backend /build/remotion/node_modules ./remotion/node_modules
+COPY --chown=promovideo:promovideo backend ./backend
+COPY --chown=promovideo:promovideo remotion ./remotion
+
+# Diretórios persistentes (montados como volume em prod)
+RUN mkdir -p /app/backend/uploads /app/backend/out /app/backend/data \
+    && chown -R promovideo:promovideo /app
+
+USER promovideo
+
+WORKDIR /app/backend
+
+ENV NODE_ENV=production
+ENV PORT=4020
+EXPOSE 4020
+
+ENTRYPOINT ["/usr/bin/tini", "--"]
+CMD ["node", "src/server.js"]

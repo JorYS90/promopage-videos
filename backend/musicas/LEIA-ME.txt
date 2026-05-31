@@ -1,0 +1,23 @@
+BIBLIOTECA DE TRILHAS SONORAS
+=============================
+
+Coloque aqui os arquivos de música (.mp3, .m4a, .wav, .ogg) que você tem
+direito de usar. Eles aparecem automaticamente pra escolher no app, na
+seção "Textos" -> "Trilha sonora" (não precisa reiniciar nada; a lista é lida
+a cada vez via GET /api/musicas).
+
+O nome do arquivo vira o nome exibido (troços com - ou _ viram espaço).
+Ex.:  supermercado-energetico.mp3  ->  "supermercado energetico"
+
+IMPORTANTE (licença):
+- Use só músicas ROYALTY-FREE / com licença pra uso comercial.
+- Para um comercial de verdade, confirme que a licença permite uso comercial.
+
+Onde achar trilhas grátis/royalty-free:
+- Pixabay Music (pixabay.com/music) — grátis, uso comercial
+- YouTube Audio Library (studio.youtube.com -> Áudio)
+- Free Music Archive (freemusicarchive.org)
+- Incompetech (incompetech.com) — atribuição em alguns casos
+
+Dica: prefira faixas instrumentais, leves e "comerciais", de 30-60s ou que
+façam loop bem (o sistema toca em loop e abaixa o volume sob a narração).

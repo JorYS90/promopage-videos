@@ -1,0 +1,677 @@
+[
+  {
+    "id": "tema-aM0CpMW1",
+    "nome": "Supermercado",
+    "categoria": "Supermercado",
+    "segmento": "supermercado",
+    "estilo": "energetico",
+    "tipo": "imagem",
+    "fundo": "#b91c1c",
+    "fundoAlt": "#7f1d1d",
+    "destaque": "#ffffff",
+    "backgrounds": {
+      "vertical": {
+        "intro": "http://localhost:4020/uploads/temas/Be13tTNLJRiHLQkQtC7Nu.png",
+        "produtos": "http://localhost:4020/uploads/temas/PxPyqhMgjc70JiscQAyt5.png",
+        "cta": "http://localhost:4020/uploads/temas/ChHULt8WvQSNpOI8MZ5-q.png",
+        "ctaFim": "http://localhost:4020/uploads/temas/Nv-THeWG0bSaBd7QX59xw.png"
+      },
+      "horizontal": {
+        "intro": "http://localhost:4020/uploads/temas/OHVK5sMIIGe2_4-wQVTJE.png",
+        "produtos": "http://localhost:4020/uploads/temas/LgXzfxeuMhNEDFHRHmHoW.png",
+        "cta": "http://localhost:4020/uploads/temas/TvNKuhr8oK-pn-wzaMWuV.png",
+        "ctaFim": "http://localhost:4020/uploads/temas/JliOrIuOHqrvJZ3lRJTu4.png"
+      },
+      "quadrado": {
+        "intro": "",
+        "produtos": "",
+        "cta": "",
+        "ctaFim": ""
+      }
+    },
+    "balaoPreco": "http://localhost:4020/uploads/temas/e6lgIQn8826uJpkchwgZK.png",
+    "balaoTextoArea": {
+      "x": 0.149951171875,
+      "y": 0.1775390625,
+      "w": 0.73037109375,
+      "h": 0.558984375
+    },
+    "precoAnim": "balancar",
+    "layout": {
+      "horizontal": {
+        "introTexto": {
+          "x": 0.303,
+          "y": 0.747,
+          "w": 0.397,
+          "h": 0.2
+        },
+        "introLogo": {
+          "x": 0.339,
+          "y": 0.101,
+          "w": 0.323,
+          "h": 0.592
+        },
+        "produtoFoto": {
+          "x": 0.149,
+          "y": 0.145,
+          "w": 0.415,
+          "h": 0.436
+        },
+        "produtoPreco": {
+          "x": 0.643,
+          "y": 0.115,
+          "w": 0.267,
+          "h": 0.324
+        },
+        "produtoNome": {
+          "x": 0.101,
+          "y": 0.591,
+          "w": 0.315,
+          "h": 0.099
+        },
+        "produtoInfo": {
+          "x": 0.114,
+          "y": 0.696,
+          "w": 0.295,
+          "h": 0.07
+        },
+        "produtoLogo": {
+          "x": 0.419,
+          "y": 0.63,
+          "w": 0.133,
+          "h": 0.229
+        },
+        "ctaTexto": {
+          "x": 0.197,
+          "y": 0.323,
+          "w": 0.586,
+          "h": 0.252
+        },
+        "ctaPeriodo": {
+          "x": 0.285,
+          "y": 0.636,
+          "w": 0.424,
+          "h": 0.081
+        },
+        "finalLogo": {
+          "x": 0.428,
+          "y": 0.094,
+          "w": 0.15,
+          "h": 0.276
+        },
+        "finalTexto": {
+          "x": 0.1,
+          "y": 0.42,
+          "w": 0.8,
+          "h": 0.18
+        },
+        "finalContato": {
+          "x": 0.081,
+          "y": 0.706,
+          "w": 0.84,
+          "h": 0.27
+        }
+      },
+      "quadrado": {
+        "introLogo": {
+          "x": 0.25,
+          "y": 0.1,
+          "w": 0.5,
+          "h": 0.48
+        },
+        "introTexto": {
+          "x": 0.13,
+          "y": 0.79,
+          "w": 0.74,
+          "h": 0.13
+        },
+        "produtoFoto": {
+          "x": 0.17,
+          "y": 0.06,
+          "w": 0.66,
+          "h": 0.34
+        },
+        "produtoNome": {
+          "x": 0.08,
+          "y": 0.42,
+          "w": 0.84,
+          "h": 0.07
+        },
+        "produtoPreco": {
+          "x": 0.22,
+          "y": 0.51,
+          "w": 0.56,
+          "h": 0.27
+        },
+        "produtoInfo": {
+          "x": 0.1,
+          "y": 0.815,
+          "w": 0.8,
+          "h": 0.045
+        },
+        "ctaTexto": {
+          "x": 0.1,
+          "y": 0.36,
+          "w": 0.8,
+          "h": 0.22
+        },
+        "ctaPeriodo": {
+          "x": 0.15,
+          "y": 0.62,
+          "w": 0.7,
+          "h": 0.08
+        },
+        "finalLogo": {
+          "x": 0.36,
+          "y": 0.07,
+          "w": 0.28,
+          "h": 0.23
+        },
+        "finalTexto": {
+          "x": 0.1,
+          "y": 0.4,
+          "w": 0.8,
+          "h": 0.16
+        },
+        "finalContato": {
+          "x": 0.07,
+          "y": 0.64,
+          "w": 0.86,
+          "h": 0.28
+        }
+      },
+      "vertical": {
+        "introLogo": {
+          "x": 0.286,
+          "y": 0.177,
+          "w": 0.428,
+          "h": 0.25
+        },
+        "introTexto": {
+          "x": 0.178,
+          "y": 0.497,
+          "w": 0.645,
+          "h": 0.077
+        },
+        "produtoFoto": {
+          "x": 0.174,
+          "y": 0.114,
+          "w": 0.649,
+          "h": 0.283
+        },
+        "produtoNome": {
+          "x": 0.121,
+          "y": 0.396,
+          "w": 0.773,
+          "h": 0.046
+        },
+        "produtoLogo": {
+          "x": 0.403,
+          "y": 0.471,
+          "w": 0.19,
+          "h": 0.107
+        },
+        "produtoPreco": {
+          "x": 0.624,
+          "y": 0.073,
+          "w": 0.376,
+          "h": 0.136
+        },
+        "produtoInfo": {
+          "x": 0.202,
+          "y": 0.436,
+          "w": 0.62,
+          "h": 0.04
+        },
+        "ctaTexto": {
+          "x": 0.123,
+          "y": 0.378,
+          "w": 0.741,
+          "h": 0.128
+        },
+        "ctaPeriodo": {
+          "x": 0.239,
+          "y": 0.544,
+          "w": 0.513,
+          "h": 0.047
+        },
+        "finalLogo": {
+          "x": 0.328,
+          "y": 0.094,
+          "w": 0.339,
+          "h": 0.186
+        },
+        "finalTexto": {
+          "x": 0.031,
+          "y": 0.358,
+          "w": 0.917,
+          "h": 0.202
+        },
+        "finalContato": {
+          "x": 0.051,
+          "y": 0.801,
+          "w": 0.904,
+          "h": 0.199
+        }
+      }
+    },
+    "camadas": {
+      "vertical": {
+        "esq": {
+          "img": "http://localhost:4020/uploads/produtos/ULfn5sXJnZbIcr-K5Ls6g.png",
+          "anim": "flutuar"
+        },
+        "dir": {
+          "img": "http://localhost:4020/uploads/produtos/Fcq3ecJbDSwD7qK_gxSYQ.png",
+          "anim": "flutuar"
+        },
+        "icones": {
+          "img": "http://localhost:4020/uploads/temas/wprmlqsl9SehwtySwc0TK.png",
+          "anim": "parallax"
+        }
+      },
+      "horizontal": {
+        "esq": {
+          "img": "http://localhost:4020/uploads/produtos/9hRAF3CbghMyZMMxhpsID.png",
+          "anim": "deslizar"
+        },
+        "dir": {
+          "img": "http://localhost:4020/uploads/produtos/B7vgHGyiKDQrBTaMIPrUd.png",
+          "anim": "flutuar"
+        },
+        "icones": {
+          "img": "http://localhost:4020/uploads/produtos/a3U1EsCTTS3L_eeElcIga.png",
+          "anim": "pulsar"
+        }
+      },
+      "quadrado": {
+        "esq": {
+          "img": "",
+          "anim": "flutuar"
+        },
+        "dir": {
+          "img": "",
+          "anim": "flutuar"
+        },
+        "icones": {
+          "img": "",
+          "anim": "parallax"
+        }
+      }
+    },
+    "pilulaPreco": "#ffffff",
+    "textoPreco": "#df030a",
+    "textoForte": "#002690",
+    "textoSuave": "#fee2e2",
+    "introTextoCor": "#002690",
+    "ctaFundo": "#f7f7f7",
+    "ctaTexto": "#000000",
+    "rodapeCor": "#05133b",
+    "rodapeFiletCor": "#e11d2a",
+    "fontTitulo": "Anton",
+    "fontPreco": "Anton",
+    "fontTexto": "Barlow Condensed",
+    "custom": true
+  },
+  {
+    "id": "tema-71-BIdW5",
+    "nome": "Fecha mês",
+    "categoria": "Supermercado",
+    "segmento": "supermercado",
+    "estilo": "energetico",
+    "tipo": "imagem",
+    "fundo": "#b91c1c",
+    "fundoAlt": "#7f1d1d",
+    "destaque": "#ffffff",
+    "backgrounds": {
+      "vertical": {
+        "intro": "",
+        "produtos": "",
+        "cta": "",
+        "ctaFim": ""
+      },
+      "horizontal": {
+        "intro": "http://localhost:4020/uploads/temas/QkERZeKMooJ2Eo6k3r-Wl.png",
+        "produtos": "http://localhost:4020/uploads/temas/FL-5NFolip7jHMPXlIg3O.png",
+        "cta": "http://localhost:4020/uploads/temas/Ey9Q0TWh-xsYZIMOTE7e7.png",
+        "ctaFim": "http://localhost:4020/uploads/temas/WsScuTWpfDT9RsKegXWio.png"
+      },
+      "quadrado": {
+        "intro": "",
+        "produtos": "",
+        "cta": "",
+        "ctaFim": ""
+      }
+    },
+    "balaoPreco": "",
+    "balaoTextoArea": null,
+    "precoAnim": "flutuar",
+    "precoTransparente": true,
+    "layout": {
+      "horizontal": {
+        "camadaEsq": {
+          "x": 0,
+          "y": 0.262,
+          "w": 0.264,
+          "h": 0.443
+        },
+        "introTexto": {
+          "x": 0.108,
+          "y": 0.505,
+          "w": 0.786,
+          "h": 0.284
+        },
+        "introLogo": {
+          "x": 0.299,
+          "y": 0.118,
+          "w": 0.417,
+          "h": 0.329
+        },
+        "camadaDir": {
+          "x": 0.745,
+          "y": 0.252,
+          "w": 0.255,
+          "h": 0.458
+        },
+        "produtoFoto": {
+          "x": 0.081,
+          "y": 0.324,
+          "w": 0.316,
+          "h": 0.545
+        },
+        "produtoNome": {
+          "x": 0.584,
+          "y": 0.186,
+          "w": 0.358,
+          "h": 0.224
+        },
+        "produtoLogo": {
+          "x": 0,
+          "y": 0,
+          "w": 0.178,
+          "h": 0.26
+        },
+        "produtoPreco": {
+          "x": 0.581,
+          "y": 0.427,
+          "w": 0.355,
+          "h": 0.16
+        },
+        "produtoInfo": {
+          "x": 0.614,
+          "y": 0.588,
+          "w": 0.286,
+          "h": 0.074
+        },
+        "ctaTexto": {
+          "x": 0.098,
+          "y": 0.319,
+          "w": 0.795,
+          "h": 0.283
+        },
+        "ctaPeriodo": {
+          "x": 0.246,
+          "y": 0.671,
+          "w": 0.506,
+          "h": 0.069
+        },
+        "finalLogo": {
+          "x": 0.274,
+          "y": 0.074,
+          "w": 0.47,
+          "h": 0.292
+        },
+        "finalTexto": {
+          "x": 0.103,
+          "y": 0.431,
+          "w": 0.799,
+          "h": 0.179
+        },
+        "finalContato": {
+          "x": 0.069,
+          "y": 0.711,
+          "w": 0.873,
+          "h": 0.194
+        }
+      }
+    },
+    "camadas": {
+      "vertical": {
+        "esq": {
+          "img": "",
+          "anim": "flutuar"
+        },
+        "dir": {
+          "img": "",
+          "anim": "flutuar"
+        },
+        "icones": {
+          "img": "",
+          "anim": "parallax"
+        }
+      },
+      "horizontal": {
+        "esq": {
+          "img": "http://localhost:4020/uploads/produtos/pl4rmkL1ykhAB2nfZFIvn.png",
+          "anim": "pulsar"
+        },
+        "dir": {
+          "img": "http://localhost:4020/uploads/produtos/0KG_kYBDzIMqx9wIoV1DC.png",
+          "anim": "pulsar"
+        },
+        "icones": {
+          "img": "http://localhost:4020/uploads/produtos/nfNDaMMY6Z1oM0ItK-7CW.png",
+          "anim": "parallax"
+        }
+      },
+      "quadrado": {
+        "esq": {
+          "img": "",
+          "anim": "flutuar"
+        },
+        "dir": {
+          "img": "",
+          "anim": "flutuar"
+        },
+        "icones": {
+          "img": "",
+          "anim": "parallax"
+        }
+      }
+    },
+    "pilulaPreco": "#ffffff",
+    "textoPreco": "#ffffff",
+    "textoForte": "#ffffff",
+    "textoSuave": "#fee2e2",
+    "introTextoCor": "#ffffff",
+    "ctaFundo": "#ffffff",
+    "ctaTexto": "#ffffff",
+    "rodapeCor": "#ec2401",
+    "rodapeFiletCor": "#921e38",
+    "fontTitulo": "Anton",
+    "fontPreco": "Anton",
+    "fontTexto": "Barlow Condensed",
+    "custom": true
+  },
+  {
+    "id": "tema-MxCV0KnS",
+    "nome": "Dia do Hamburguer",
+    "categoria": "Hamburgueria",
+    "segmento": "supermercado",
+    "estilo": "energetico",
+    "tipo": "imagem",
+    "fundo": "#b91c1c",
+    "fundoAlt": "#7f1d1d",
+    "destaque": "#ffffff",
+    "backgrounds": {
+      "vertical": {
+        "intro": "http://localhost:4020/uploads/temas/ABxTk7kKLJE-duA-VR86Y.png",
+        "produtos": "http://localhost:4020/uploads/temas/wrOQkYSMcKB0zaP7-Cv1y.png",
+        "cta": "http://localhost:4020/uploads/temas/-vSRzjxRxJeyUyOYwE3Gy.png",
+        "ctaFim": "http://localhost:4020/uploads/temas/47VfKeaJqSWmfZpE4u3SD.png"
+      },
+      "horizontal": {
+        "intro": "",
+        "produtos": "",
+        "cta": "",
+        "ctaFim": ""
+      },
+      "quadrado": {
+        "intro": "",
+        "produtos": "",
+        "cta": "",
+        "ctaFim": ""
+      }
+    },
+    "balaoPreco": "",
+    "balaoTextoArea": null,
+    "precoAnim": "flutuar",
+    "precoTransparente": true,
+    "efeitoLuzes": true,
+    "layout": {
+      "vertical": {
+        "produtoFoto": {
+          "x": 0.103,
+          "y": 0.078,
+          "w": 0.816,
+          "h": 0.428
+        },
+        "produtoNome": {
+          "x": 0.087,
+          "y": 0.576,
+          "w": 0.828,
+          "h": 0.071
+        },
+        "produtoLogo": {
+          "x": 0.702,
+          "y": 0,
+          "w": 0.298,
+          "h": 0.147
+        },
+        "produtoPreco": {
+          "x": 0.231,
+          "y": 0.7,
+          "w": 0.544,
+          "h": 0.115
+        },
+        "produtoInfo": {
+          "x": 0.105,
+          "y": 0.834,
+          "w": 0.824,
+          "h": 0.04
+        },
+        "introLogo": {
+          "x": 0.221,
+          "y": 0.133,
+          "w": 0.578,
+          "h": 0.156
+        },
+        "camadaDir": {
+          "x": 0.298,
+          "y": 0.604,
+          "w": 1.065,
+          "h": 0.542
+        },
+        "camadaEsq": {
+          "x": 0.037,
+          "y": 0.467,
+          "w": 0.34,
+          "h": 0.183
+        },
+        "introTexto": {
+          "x": 0.244,
+          "y": 0.595,
+          "w": 0.508,
+          "h": 0.108
+        },
+        "ctaTexto": {
+          "x": 0.151,
+          "y": 0.253,
+          "w": 0.691,
+          "h": 0.301
+        },
+        "ctaPeriodo": {
+          "x": 0.202,
+          "y": 0.646,
+          "w": 0.596,
+          "h": 0.05
+        },
+        "finalLogo": {
+          "x": 0.179,
+          "y": 0.096,
+          "w": 0.639,
+          "h": 0.244
+        },
+        "finalTexto": {
+          "x": 0.156,
+          "y": 0.459,
+          "w": 0.683,
+          "h": 0.241
+        },
+        "finalContato": {
+          "x": 0.118,
+          "y": 0.794,
+          "w": 0.771,
+          "h": 0.088
+        }
+      }
+    },
+    "camadas": {
+      "vertical": {
+        "esq": {
+          "img": "http://localhost:4020/uploads/produtos/Q1B7pboSw8CJW4MbTHSv0.png",
+          "anim": "pulsar"
+        },
+        "dir": {
+          "img": "http://localhost:4020/uploads/produtos/c3aR37PKTJycvYFWJk59d.png",
+          "anim": "deslizar"
+        },
+        "icones": {
+          "img": "",
+          "anim": "deslizar"
+        }
+      },
+      "horizontal": {
+        "esq": {
+          "img": "",
+          "anim": "flutuar"
+        },
+        "dir": {
+          "img": "",
+          "anim": "flutuar"
+        },
+        "icones": {
+          "img": "",
+          "anim": "parallax"
+        }
+      },
+      "quadrado": {
+        "esq": {
+          "img": "",
+          "anim": "flutuar"
+        },
+        "dir": {
+          "img": "",
+          "anim": "flutuar"
+        },
+        "icones": {
+          "img": "",
+          "anim": "parallax"
+        }
+      }
+    },
+    "pilulaPreco": "#ffffff",
+    "textoPreco": "#ffffff",
+    "textoForte": "#ffffff",
+    "textoSuave": "#fee2e2",
+    "introTextoCor": "#ffffff",
+    "ctaFundo": "#ffffff",
+    "ctaTexto": "#ffffff",
+    "rodapeCor": "#610d00",
+    "rodapeFiletCor": "#160a04",
+    "fontTitulo": "Anton",
+    "fontPreco": "Anton",
+    "fontTexto": "Barlow Condensed",
+    "custom": true
+  }
+]

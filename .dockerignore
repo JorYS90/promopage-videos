@@ -1,0 +1,19 @@
+# Não copiar lixo pro contexto do build (acelera build + diminui imagem)
+**/node_modules
+**/dist
+**/.git
+**/.env
+**/.env.local
+**/.DS_Store
+**/*.log
+
+# Saídas de render (vídeos MP4 gerados localmente) — não precisa no container
+backend/out
+backend/uploads
+
+# Estúdio do Remotion (cache local)
+remotion/.next
+remotion/.cache
+
+# Pasta de logo — copiada manualmente pro frontend/public quando necessário
+logo
