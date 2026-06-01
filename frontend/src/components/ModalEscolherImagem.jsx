@@ -93,10 +93,26 @@ export default function ModalEscolherImagem({ aberto, queryInicial, aoFechar, ao
 
   const selecionar = (i) => setSelecionada(i);
 
+  // Quando user confirma a escolha (✓ USAR): aplica a URL E ensina o sistema.
+  // PESO 10 = sinal MÉDIO ('escolha explícita do user'). Vai pro banco compartilhado
+  // do PromoPage — próxima busca pelo MESMO nome de produto (em qualquer app)
+  // prioriza essa foto como popular. Sem isso, o sistema nunca aprende qual foto é
+  // a CERTA pra "Linguiça Seara" e continua devolvendo Pizza Seara no #1.
+  // (Upload manual = peso 20, mais forte. Só selecionar do grid = peso 10.)
   const confirmarEscolha = () => {
     if (selecionada === null) return;
     const item = listaCombinada[selecionada];
     if (!item) return;
+    // Registra a escolha no banco de populares (não bloqueia em erro)
+    const nome = (queryInicial || query || '').trim();
+    if (nome && item.url) {
+      fetch(`${API_PROMOPAGE}/api/produtos/registrar-imagem`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, imagemUrl: item.url, peso: 10 }),
+        credentials: 'include',
+      }).catch(() => {});
+    }
     aoEscolher(item.url);
     aoFechar();
   };
