@@ -948,6 +948,9 @@ a.contato-item:hover { border-color: var(--neon); background: #f1f5ff; }
    Adaptado do PromoPage — mesmo visual, chama backend compartilhado.
    Abre quando user clica "Buscar imagem" no editor de produtos. */
 .modal.escolher-imagem {
+  /* width: 95% garante que ocupe o máximo (com max 1200px) — sem isso
+     fica preso ao tamanho natural do conteúdo (~800px). */
+  width: 95%;
   max-width: 1200px; max-height: 92vh; padding: 28px 32px;
   background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
   color: #e2e8f0;

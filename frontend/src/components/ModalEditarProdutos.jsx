@@ -27,24 +27,13 @@ export default function ModalEditarProdutos({ produtos, maxProdutos = 7, aoMudar
 
   // Quando user clica "Buscar imagem" abre o modal de GRID em vez de pegar a 1ª foto.
   // Modal devolve a URL escolhida; aplica no produto + tenta remover fundo automático.
-  async function aoEscolherImagem(idx, url) {
-    if (!url) return;
-    setErro('');
-    setProcessando(idx);
-    try {
-      // Remoção de fundo automática (chroma key) — não bloqueia se falhar
-      let finalUrl = url, removido = false;
-      try {
-        const blob = await removerFundo(url, { pularIA: true });
-        if (blob) {
-          const f = new File([blob], 'sem-fundo.png', { type: 'image/png' });
-          finalUrl = (await uploadImagem(f, 'produto')).url;
-          removido = true;
-        }
-      } catch { /* mantém original */ }
-      aoMudar(idx, { ...produtos[idx], imagem: finalUrl, fundoRemovido: removido });
-    } catch (e) { setErro(e.message); }
-    finally { setProcessando(null); }
+  // Aplica imagem escolhida no produto. SIMPLES — só seta a URL.
+  // ANTES: tentava removerFundo() automaticamente, mas isso travava com URLs
+  // de outros domínios (CORS no canvas). User reportou cards ficando cinza
+  // sem foto. Agora user clica '✨ Remover fundo (IA)' DEPOIS se quiser.
+  function aoEscolherImagem(idx, url) {
+    if (!url || idx === null) return;
+    aoMudar(idx, { ...produtos[idx], imagem: url, fundoRemovido: false });
   }
 
   async function enviarImagem(idx, file) {

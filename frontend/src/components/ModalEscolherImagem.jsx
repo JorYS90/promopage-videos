@@ -10,6 +10,7 @@
 // Endpoint compartilhado: PromoPage backend (4010 dev, promopage.com.br prod).
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 const API_PROMOPAGE = import.meta.env.PROD
   ? 'https://promopage.com.br'
@@ -159,7 +160,11 @@ export default function ModalEscolherImagem({ aberto, queryInicial, aoFechar, ao
 
   if (!aberto) return null;
 
-  return (
+  // PORTAL: renderiza no document.body em vez de dentro do componente pai.
+  // Antes, o ModalEditarProdutos abrigava esse modal DENTRO de si — fazendo
+  // o overlay herdar o width limitado do modal pai (visual quebrado: modal
+  // pequeno em vez de 1200px). Portal escapa do DOM do pai.
+  return createPortal(
     <div className="modal-overlay" onClick={aoFechar}>
       <div className="modal escolher-imagem" onClick={e => e.stopPropagation()}>
         <button className="btn-fechar-x" onClick={aoFechar} aria-label="Fechar">✕</button>
@@ -240,6 +245,7 @@ export default function ModalEscolherImagem({ aberto, queryInicial, aoFechar, ao
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
