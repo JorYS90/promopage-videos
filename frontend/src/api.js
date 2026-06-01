@@ -81,25 +81,28 @@ export async function uploadImagem(file, tipo = 'produto') {
 //
 // O endpoint do PromoPage é GET ?q=<nome>&limite=1 — uma chamada por nome,
 // em paralelo. Auth via cookie cross-subdomain (em prod) ou CORS dev.
-// THRESHOLD pra auto-pick: só aplica imagem automaticamente se o melhor
-// resultado bate pelo menos 1 palavra da query no título OU está num CDN
-// confiável. Sem isso, queries que só retornam Wikimedia genérico (ex:
-// "Meio da asa" devolvendo "Vislumbre Colorido") aplicavam lixo automaticamente.
-const SCORE_MIN_AUTO = 10;
+// THRESHOLD pra auto-pick: só rejeita scores NEGATIVOS (lixo claro como
+// Pride/YouTube/etc penalizados). Scores positivos (até mesmo wikimedia
+// genérico com 5pts) passam — mesmo não sendo perfeito, é melhor ter UMA
+// foto que placeholder vazio. User pode trocar pelo modal se não gostar.
+//
+// Calibração:
+//   Score >= 10: muito restritivo, deixa muitos produtos sem foto (testado: ruim)
+//   Score >= 1:  permissivo, pega Wikimedia ENG "Chicken Wings" pra "Coxinha"
+//   Score <= 0:  rejeita só lixo claramente penalizado (Pride, YouTube, etc)
+const SCORE_MIN_AUTO = 1;
 
-// Busca a melhor imagem pra cada nome. Pede limite=3 pra ter alternativas
-// e aplicar threshold no client. Se nada passa o threshold (resultado todo
-// é lixo), retorna imagem=null — frontend mostra placeholder e user busca manual.
+// Busca a melhor imagem pra cada nome. Pede limite=5 pra ter alternativas:
+// percorre em ordem, pega o 1º que passa threshold. Se TODOS falham, retorna
+// imagem=null (placeholder) — user clica "🔎 Buscar imagem" pra escolher manual.
 export async function buscarImagens(nomes) {
   const resultados = await Promise.all(nomes.map(async (nome) => {
     try {
-      const url = `${API_PROMOPAGE}/api/produtos/buscar-imagens?q=${encodeURIComponent(nome)}&limite=3`;
+      const url = `${API_PROMOPAGE}/api/produtos/buscar-imagens?q=${encodeURIComponent(nome)}&limite=5`;
       const r = await fetch(url, { credentials: 'include' });
       if (!r.ok) return { nome, imagem: null, fonte: null };
       const data = await r.json();
       const candidatos = data.imagens || [];
-      // Threshold: só pega se score do melhor candidato >= SCORE_MIN_AUTO.
-      // Resultados sem `score` (compat retroativa) passam pelo threshold.
       const melhor = candidatos.find(c => c.score === undefined || c.score >= SCORE_MIN_AUTO);
       if (!melhor) return { nome, imagem: null, fonte: null, _baixaQualidade: true };
       return {
