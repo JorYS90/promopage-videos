@@ -124,23 +124,24 @@ export default function ModalEditarProdutos({ produtos, maxProdutos = 7, aoMudar
               >⠿</button>
 
               <div className="col-img">
-                <label className="img-wrapper-grande" style={p.fundoRemovido ? { background: 'repeating-conic-gradient(#e9edf2 0% 25%, #fff 0% 50%) 50% / 16px 16px' } : null}>
+                {/* PARIDADE COM PROMOPAGE: clicar no quadrado da imagem ABRE O MODAL
+                    de escolha (grid de populares + internet) — NÃO abre file picker direto.
+                    O upload de foto local está DENTRO do modal (botão "📤 Subir foto minha").
+                    Antes era <label> com <input type="file"> — virou <div> + onClick que dispara modal. */}
+                <div
+                  className="img-wrapper-grande"
+                  onClick={() => p.nome && !proc && setEscolherIdx(idx)}
+                  style={{
+                    cursor: p.nome && !proc ? 'pointer' : 'not-allowed',
+                    ...(p.fundoRemovido ? { background: 'repeating-conic-gradient(#e9edf2 0% 25%, #fff 0% 50%) 50% / 16px 16px' } : {}),
+                  }}
+                  title={p.nome ? 'Clique pra escolher outra imagem (grid de opções + upload do PC)' : 'Digite o nome do produto primeiro'}
+                >
                   {p.imagem ? <img src={p.imagem} alt="" /> : <div className="sem-img">📦</div>}
                   {proc && <div className="overlay-processando">Removendo fundo…</div>}
-                  {!proc && <div className="overlay-trocar-grande">{p.imagem ? 'TROCAR IMAGEM' : 'ENVIAR IMAGEM'}</div>}
+                  {!proc && <div className="overlay-trocar-grande">{p.imagem ? 'TROCAR IMAGEM' : 'ESCOLHER IMAGEM'}</div>}
                   {p.fundoRemovido && !proc && <span className="badge-sem-fundo">SEM FUNDO</span>}
-                  <input type="file" accept="image/*" hidden onChange={(e) => enviarImagem(idx, e.target.files[0])} />
-                </label>
-                {!proc && (
-                  <button
-                    className="link-acao"
-                    disabled={!p.nome}
-                    onClick={() => setEscolherIdx(idx)}
-                    title="Abre grid com 20 imagens pra você escolher (em vez de pegar a 1ª automaticamente)"
-                  >
-                    🔎 Buscar imagem
-                  </button>
-                )}
+                </div>
                 {p.imagem && !proc && (
                   <button className="link-acao" onClick={() => tirarFundo(idx)} title="Use se o fundo automático não recortou bem (usa IA, ~3-5s)">✨ Remover fundo (IA)</button>
                 )}
