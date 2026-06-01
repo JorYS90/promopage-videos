@@ -81,18 +81,31 @@ export async function uploadImagem(file, tipo = 'produto') {
 //
 // O endpoint do PromoPage é GET ?q=<nome>&limite=1 — uma chamada por nome,
 // em paralelo. Auth via cookie cross-subdomain (em prod) ou CORS dev.
+// THRESHOLD pra auto-pick: só aplica imagem automaticamente se o melhor
+// resultado bate pelo menos 1 palavra da query no título OU está num CDN
+// confiável. Sem isso, queries que só retornam Wikimedia genérico (ex:
+// "Meio da asa" devolvendo "Vislumbre Colorido") aplicavam lixo automaticamente.
+const SCORE_MIN_AUTO = 10;
+
+// Busca a melhor imagem pra cada nome. Pede limite=3 pra ter alternativas
+// e aplicar threshold no client. Se nada passa o threshold (resultado todo
+// é lixo), retorna imagem=null — frontend mostra placeholder e user busca manual.
 export async function buscarImagens(nomes) {
   const resultados = await Promise.all(nomes.map(async (nome) => {
     try {
-      const url = `${API_PROMOPAGE}/api/produtos/buscar-imagens?q=${encodeURIComponent(nome)}&limite=1`;
+      const url = `${API_PROMOPAGE}/api/produtos/buscar-imagens?q=${encodeURIComponent(nome)}&limite=3`;
       const r = await fetch(url, { credentials: 'include' });
       if (!r.ok) return { nome, imagem: null, fonte: null };
       const data = await r.json();
-      const primeira = (data.imagens || [])[0];
+      const candidatos = data.imagens || [];
+      // Threshold: só pega se score do melhor candidato >= SCORE_MIN_AUTO.
+      // Resultados sem `score` (compat retroativa) passam pelo threshold.
+      const melhor = candidatos.find(c => c.score === undefined || c.score >= SCORE_MIN_AUTO);
+      if (!melhor) return { nome, imagem: null, fonte: null, _baixaQualidade: true };
       return {
         nome,
-        imagem: primeira?.url || primeira?.thumbUrl || null,
-        fonte: primeira?.fonte || null,
+        imagem: melhor.url || melhor.thumbUrl || null,
+        fonte: melhor.fonte || null,
       };
     } catch {
       return { nome, imagem: null, fonte: null };
