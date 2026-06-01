@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { uploadImagem } from '../api.js';
 import { removerFundo } from '../remover-fundo.js';
+import ModalEscolherImagem from './ModalEscolherImagem.jsx';
 
 // Unidades (abreviação padrão de varejo BR) — value = abreviação usada no preço.
 const UNIDADES = [
@@ -20,6 +21,31 @@ export default function ModalEditarProdutos({ produtos, maxProdutos = 7, aoMudar
   const [hoverIdx, setHoverIdx] = useState(null);
   const [dragArmadoIdx, setDragArmadoIdx] = useState(null);
   const [erro, setErro] = useState('');
+  // Modal de seleção de imagem em GRID (chama backend do PromoPage).
+  // escolherIdx = qual produto está com modal aberto; null = fechado.
+  const [escolherIdx, setEscolherIdx] = useState(null);
+
+  // Quando user clica "Buscar imagem" abre o modal de GRID em vez de pegar a 1ª foto.
+  // Modal devolve a URL escolhida; aplica no produto + tenta remover fundo automático.
+  async function aoEscolherImagem(idx, url) {
+    if (!url) return;
+    setErro('');
+    setProcessando(idx);
+    try {
+      // Remoção de fundo automática (chroma key) — não bloqueia se falhar
+      let finalUrl = url, removido = false;
+      try {
+        const blob = await removerFundo(url, { pularIA: true });
+        if (blob) {
+          const f = new File([blob], 'sem-fundo.png', { type: 'image/png' });
+          finalUrl = (await uploadImagem(f, 'produto')).url;
+          removido = true;
+        }
+      } catch { /* mantém original */ }
+      aoMudar(idx, { ...produtos[idx], imagem: finalUrl, fundoRemovido: removido });
+    } catch (e) { setErro(e.message); }
+    finally { setProcessando(null); }
+  }
 
   async function enviarImagem(idx, file) {
     if (!file) return;
@@ -105,9 +131,14 @@ export default function ModalEditarProdutos({ produtos, maxProdutos = 7, aoMudar
                   {p.fundoRemovido && !proc && <span className="badge-sem-fundo">SEM FUNDO</span>}
                   <input type="file" accept="image/*" hidden onChange={(e) => enviarImagem(idx, e.target.files[0])} />
                 </label>
-                {aoBuscarImagem && !proc && (
-                  <button className="link-acao" disabled={buscandoIdx === idx || !p.nome} onClick={() => aoBuscarImagem(idx)}>
-                    {buscandoIdx === idx ? '🔎 buscando…' : '🔎 Buscar imagem'}
+                {!proc && (
+                  <button
+                    className="link-acao"
+                    disabled={!p.nome}
+                    onClick={() => setEscolherIdx(idx)}
+                    title="Abre grid com 20 imagens pra você escolher (em vez de pegar a 1ª automaticamente)"
+                  >
+                    🔎 Buscar imagem
                   </button>
                 )}
                 {p.imagem && !proc && (
@@ -166,6 +197,14 @@ export default function ModalEditarProdutos({ produtos, maxProdutos = 7, aoMudar
           <button className="btn btn-add" style={{ marginTop: 6 }} onClick={aoAdicionar}>+ Adicionar produto</button>
         )}
       </div>
+
+      {/* Modal de seleção de imagem em grid — usa backend do PromoPage (cookie cross-subdomain) */}
+      <ModalEscolherImagem
+        aberto={escolherIdx !== null}
+        queryInicial={escolherIdx !== null ? (produtos[escolherIdx]?.nome || '') : ''}
+        aoFechar={() => setEscolherIdx(null)}
+        aoEscolher={(url) => { aoEscolherImagem(escolherIdx, url); }}
+      />
     </div>
   );
 }
