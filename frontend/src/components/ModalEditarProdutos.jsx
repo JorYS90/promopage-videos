@@ -27,13 +27,37 @@ export default function ModalEditarProdutos({ produtos, maxProdutos = 7, aoMudar
 
   // Quando user clica "Buscar imagem" abre o modal de GRID em vez de pegar a 1ª foto.
   // Modal devolve a URL escolhida; aplica no produto + tenta remover fundo automático.
-  // Aplica imagem escolhida no produto. SIMPLES — só seta a URL.
-  // ANTES: tentava removerFundo() automaticamente, mas isso travava com URLs
-  // de outros domínios (CORS no canvas). User reportou cards ficando cinza
-  // sem foto. Agora user clica '✨ Remover fundo (IA)' DEPOIS se quiser.
+  // URL base do PromoPage (mesmo do api.js — duplicado pra evitar import).
+  const API_PROMOPAGE = import.meta.env.PROD
+    ? 'https://promopage.com.br'
+    : 'http://localhost:4010';
+
+  // Converte URL pra forma USÁVEL no card do produto e nos renders Remotion.
+  // 3 casos:
+  //   1. URL relativa do PromoPage ('/uploads/3/X.jpg') → prefixa API_PROMOPAGE
+  //   2. URL externa (http://clickescolar.com.br/X.jpg) → passa pelo proxy do
+  //      PromoPage (resolve CORS + cache no servidor)
+  //   3. URL já do PromoPage (https://promopage.com.br/...) → usa direto
+  function normalizarUrlImagem(url) {
+    if (!url) return url;
+    if (url.startsWith('/uploads/') || url.startsWith('/api/')) {
+      return `${API_PROMOPAGE}${url}`;
+    }
+    if (url.startsWith('http')) {
+      // URL externa — passa pelo proxy do PromoPage pra resolver CORS
+      if (url.startsWith(API_PROMOPAGE)) return url;  // já é do PP
+      return `${API_PROMOPAGE}/api/proxy-imagem-direto?url=${encodeURIComponent(url)}`;
+    }
+    return url;
+  }
+
+  // Aplica imagem escolhida no produto. Normaliza URL pra evitar CORS no
+  // <img> do card (que não tem como mexer em headers).
+  // User clica '✨ Remover fundo (IA)' DEPOIS pra tirar background se quiser.
   function aoEscolherImagem(idx, url) {
     if (!url || idx === null) return;
-    aoMudar(idx, { ...produtos[idx], imagem: url, fundoRemovido: false });
+    const urlNormalizada = normalizarUrlImagem(url);
+    aoMudar(idx, { ...produtos[idx], imagem: urlNormalizada, fundoRemovido: false });
   }
 
   async function enviarImagem(idx, file) {
