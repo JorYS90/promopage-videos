@@ -196,49 +196,43 @@ export default function ModalEscolherImagem({ aberto, queryInicial, aoFechar, ao
           />
         </div>
 
-        {/* Status com info rica: quantos populares + status da busca internet.
-            Populares aparecem INSTANTANEAMENTE (do banco interno).
-            Internet demora 3-8s — mostramos progresso pro user não achar travado. */}
-        <div style={{ fontSize: 13, color: '#94a3b8', margin: '14px 0 8px', display: 'flex', gap: 12, alignItems: 'center' }}>
-          {populares.length > 0 && (
-            <span style={{ color: '#22d3ee' }}>
-              ✓ {populares.length} foto{populares.length === 1 ? '' : 's'} sua{populares.length === 1 ? '' : 's'}
-            </span>
-          )}
-          {carregando ? (
-            <span>🔎 Buscando até 24 imagens da internet... (~5s)</span>
-          ) : (
-            <span>+ {imagens.length} da internet · <b>{listaCombinada.length}</b> total no grid</span>
-          )}
+        {/* Status sóbrio — só conta total (igual PromoPage, sem diferenciar suas/internet) */}
+        <div style={{ fontSize: 13, color: '#94a3b8', margin: '14px 0 8px' }}>
+          {carregando
+            ? '🔎 Buscando imagens...'
+            : `${listaCombinada.length} imagem${listaCombinada.length === 1 ? '' : 'ns'} encontrada${listaCombinada.length === 1 ? '' : 's'}`}
         </div>
 
         <div className="grid-imagens">
-          {listaCombinada.map((img, i) => (
-            <div
-              key={`img-${i}`}
-              className={`img-card ${selecionada === i ? 'selecionada' : ''} ${img.isPopular ? 'img-popular' : ''}`}
-              onClick={() => selecionar(i)}
-              title={img.titulo}
-            >
-              <img
-                src={img.isPopular ? img.url : `${API_PROMOPAGE}/api/proxy-imagem-direto?url=${encodeURIComponent(img.url)}`}
-                alt={img.titulo}
-                onError={(e) => { e.target.parentElement.style.opacity = 0.3; }}
-              />
-              {/* Badge "✓ Sua foto" — sinaliza que essa imagem é prioridade
-                  (user subiu OU já usou antes). Reforça hierarquia visual. */}
-              {img.isPopular && (
-                <span className="badge-popular" title="Foto que você ou outro user da plataforma já usou antes">
-                  ✓ Sua foto
-                </span>
-              )}
-              {selecionada === i && (
-                <button className="btn-criar" onClick={(e) => { e.stopPropagation(); confirmarEscolha(); }}>
-                  ✓ USAR
-                </button>
-              )}
-            </div>
-          ))}
+          {listaCombinada.map((img, i) => {
+            // BUG-FIX: populares vêm com URL RELATIVA (/uploads/3/file.jpg)
+            // do backend do PromoPage. Sem prefixar API_PROMOPAGE, o browser
+            // tenta carregar de videos.promopage.com.br (não existe) → 404.
+            // Imagens da internet vão via proxy (CORS + redimensionamento).
+            const srcPopular = img.url?.startsWith('http')
+              ? img.url
+              : `${API_PROMOPAGE}${img.url}`;
+            const srcInternet = `${API_PROMOPAGE}/api/proxy-imagem-direto?url=${encodeURIComponent(img.url)}`;
+            return (
+              <div
+                key={`img-${i}`}
+                className={`img-card ${selecionada === i ? 'selecionada' : ''}`}
+                onClick={() => selecionar(i)}
+                title={img.titulo}
+              >
+                <img
+                  src={img.isPopular ? srcPopular : srcInternet}
+                  alt={img.titulo}
+                  onError={(e) => { e.target.parentElement.style.opacity = 0.3; }}
+                />
+                {selecionada === i && (
+                  <button className="btn-criar" onClick={(e) => { e.stopPropagation(); confirmarEscolha(); }}>
+                    ✓ USAR
+                  </button>
+                )}
+              </div>
+            );
+          })}
           {!carregando && listaCombinada.length === 0 && (
             <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: 30, color: '#94a3b8' }}>
               Nenhuma imagem encontrada. Tente refinar a busca.
