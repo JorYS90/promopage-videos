@@ -48,14 +48,15 @@ export default function ModalEscolherImagem({ aberto, queryInicial, aoFechar, ao
     }
   };
 
-  // Busca via Bing/Google/OFF — pode demorar alguns segundos.
+  // Busca via Bing/Google/OFF — pode demorar 3-8s (cada fonte externa lenta).
+  // Pedimos 24 (em vez de 12) pra ter mais opções no grid.
   const buscar = async (q) => {
     if (!q.trim()) return;
     setCarregando(true);
     setSelecionada(null);
     try {
       const r = await fetch(
-        `${API_PROMOPAGE}/api/produtos/buscar-imagens?q=${encodeURIComponent(q)}&limite=12`,
+        `${API_PROMOPAGE}/api/produtos/buscar-imagens?q=${encodeURIComponent(q)}&limite=24`,
         { credentials: 'include' },
       );
       const json = await r.json();
@@ -67,8 +68,10 @@ export default function ModalEscolherImagem({ aberto, queryInicial, aoFechar, ao
     }
   };
 
-  // Lista combinada — populares primeiro, internet preenche até 20.
-  const MAX_TOTAL = 20;
+  // Lista combinada — populares primeiro (com badge "✓ Sua foto"), internet
+  // preenche até 30. Quanto MAIS opções, melhor a chance do user achar a foto
+  // certa sem precisar refinar a busca várias vezes.
+  const MAX_TOTAL = 30;
   const listaCombinada = (() => {
     const vistas = new Set();
     const out = [];
@@ -193,17 +196,27 @@ export default function ModalEscolherImagem({ aberto, queryInicial, aoFechar, ao
           />
         </div>
 
-        <div style={{ fontSize: 13, color: '#94a3b8', margin: '14px 0 8px' }}>
-          {carregando
-            ? '🔎 Buscando imagens...'
-            : `${listaCombinada.length} imagem${listaCombinada.length === 1 ? '' : 'ns'} encontrada${listaCombinada.length === 1 ? '' : 's'}`}
+        {/* Status com info rica: quantos populares + status da busca internet.
+            Populares aparecem INSTANTANEAMENTE (do banco interno).
+            Internet demora 3-8s — mostramos progresso pro user não achar travado. */}
+        <div style={{ fontSize: 13, color: '#94a3b8', margin: '14px 0 8px', display: 'flex', gap: 12, alignItems: 'center' }}>
+          {populares.length > 0 && (
+            <span style={{ color: '#22d3ee' }}>
+              ✓ {populares.length} foto{populares.length === 1 ? '' : 's'} sua{populares.length === 1 ? '' : 's'}
+            </span>
+          )}
+          {carregando ? (
+            <span>🔎 Buscando até 24 imagens da internet... (~5s)</span>
+          ) : (
+            <span>+ {imagens.length} da internet · <b>{listaCombinada.length}</b> total no grid</span>
+          )}
         </div>
 
         <div className="grid-imagens">
           {listaCombinada.map((img, i) => (
             <div
               key={`img-${i}`}
-              className={`img-card ${selecionada === i ? 'selecionada' : ''}`}
+              className={`img-card ${selecionada === i ? 'selecionada' : ''} ${img.isPopular ? 'img-popular' : ''}`}
               onClick={() => selecionar(i)}
               title={img.titulo}
             >
@@ -212,6 +225,13 @@ export default function ModalEscolherImagem({ aberto, queryInicial, aoFechar, ao
                 alt={img.titulo}
                 onError={(e) => { e.target.parentElement.style.opacity = 0.3; }}
               />
+              {/* Badge "✓ Sua foto" — sinaliza que essa imagem é prioridade
+                  (user subiu OU já usou antes). Reforça hierarquia visual. */}
+              {img.isPopular && (
+                <span className="badge-popular" title="Foto que você ou outro user da plataforma já usou antes">
+                  ✓ Sua foto
+                </span>
+              )}
               {selecionada === i && (
                 <button className="btn-criar" onClick={(e) => { e.stopPropagation(); confirmarEscolha(); }}>
                   ✓ USAR
