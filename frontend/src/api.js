@@ -81,22 +81,41 @@ export async function uploadImagem(file, tipo = 'produto') {
 //
 // O endpoint do PromoPage é GET ?q=<nome>&limite=1 — uma chamada por nome,
 // em paralelo. Auth via cookie cross-subdomain (em prod) ou CORS dev.
-// THRESHOLD pra auto-pick: só rejeita scores NEGATIVOS (lixo claro como
-// Pride/YouTube/etc penalizados). Scores positivos (até mesmo wikimedia
-// genérico com 5pts) passam — mesmo não sendo perfeito, é melhor ter UMA
-// foto que placeholder vazio. User pode trocar pelo modal se não gostar.
-//
-// Calibração:
-//   Score >= 10: muito restritivo, deixa muitos produtos sem foto (testado: ruim)
-//   Score >= 1:  permissivo, pega Wikimedia ENG "Chicken Wings" pra "Coxinha"
-//   Score <= 0:  rejeita só lixo claramente penalizado (Pride, YouTube, etc)
+// THRESHOLD pra auto-pick (search externo): só rejeita scores NEGATIVOS.
 const SCORE_MIN_AUTO = 1;
 
-// Busca a melhor imagem pra cada nome. Pede limite=5 pra ter alternativas:
-// percorre em ordem, pega o 1º que passa threshold. Se TODOS falham, retorna
-// imagem=null (placeholder) — user clica "🔎 Buscar imagem" pra escolher manual.
+// Busca a melhor imagem pra cada nome — mesma estratégia do PromoPage backend
+// (server.js linha 371): PRIORIDADE MÁXIMA pra POPULARES (uploads + escolhas
+// explícitas do user, peso >= 10). Search externo só como fallback.
+//
+// PASSOS por produto (cada nome roda em paralelo):
+//   1. Consulta /api/produtos/imagens-populares (peso alto vence)
+//      → se tem popular, RETORNA ela (não chama search externo)
+//   2. Fallback: /api/produtos/buscar-imagens (Bing+OFF+Wikimedia)
+//      → pega 1º candidato que passa threshold
+//   3. Se nada bom: retorna null (frontend mostra placeholder)
+//
+// Resultado: depois que user escolhe a foto CERTA pra "Linguiça Seara" uma vez
+// (peso 10 via 'USAR' OU peso 20 via upload), próximas buscas pelo mesmo nome
+// vão DIRETO pra essa foto, sem cair no Bing que devolve Pizza Seara.
 export async function buscarImagens(nomes) {
   const resultados = await Promise.all(nomes.map(async (nome) => {
+    // 1) PRIORIDADE MÁXIMA: populares (banco compartilhado PP+PV)
+    try {
+      const rp = await fetch(
+        `${API_PROMOPAGE}/api/produtos/imagens-populares?q=${encodeURIComponent(nome)}&limite=1`,
+        { credentials: 'include' },
+      );
+      if (rp.ok) {
+        const dp = await rp.json();
+        const popular = (dp.imagens || [])[0];
+        if (popular?.url) {
+          return { nome, imagem: popular.url, fonte: 'populares' };
+        }
+      }
+    } catch { /* sem popular, segue pro search */ }
+
+    // 2) Fallback: search externo (Bing+OFF+Wikimedia)
     try {
       const url = `${API_PROMOPAGE}/api/produtos/buscar-imagens?q=${encodeURIComponent(nome)}&limite=5`;
       const r = await fetch(url, { credentials: 'include' });
