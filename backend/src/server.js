@@ -195,8 +195,12 @@ app.get('/api/videos', (req, res) => {
   res.json(jobsStore.listar().map(jobsStore.publico));
 });
 
-// Busca de imagens / placeholder (auto-foto dos produtos)
-app.use(require('./produtos-routes'));
+// Busca de imagens MIGRADA pro backend do PromoPage (eliminamos duplicação:
+// busca-imagens.js de 732 linhas era CÓPIA IDÊNTICA do que existe lá). Agora
+// o frontend chama https://promopage.com.br/api/produtos/buscar-imagens
+// diretamente via cookie cross-subdomain. Cache de imagens (cache_busca_imagens)
+// fica centralizado lá — busca em qualquer app aproveita.
+// (Arquivos removidos: busca-imagens.js, busca-orquestrador.js, produtos-routes.js)
 
 // === Temas (built-in + custom) ===
 app.get('/api/temas', (req, res) => {

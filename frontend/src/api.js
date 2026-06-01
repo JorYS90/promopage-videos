@@ -1,4 +1,15 @@
 // Camada de acesso à API (proxy do Vite -> backend 4020).
+//
+// IMPORTANTE: alguns endpoints chamam o BACKEND DO PROMOPAGE (4010 em dev,
+// promopage.com.br/api em prod) pra compartilhar dados e IA — sem duplicar
+// código nem cache. Exemplo: busca de imagens (Bing/Google/OFF) é cara, então
+// o cache fica centralizado no PromoPage e ambos os apps se beneficiam.
+//
+// Em prod: cookie do .promopage.com.br vai automático em ambos os subdomínios.
+// Em dev: precisa cross-port (localhost:5175 → localhost:4010) com CORS aberto.
+const API_PROMOPAGE = import.meta.env.PROD
+  ? 'https://promopage.com.br'
+  : 'http://localhost:4010';
 
 export async function getTemplates() {
   const r = await fetch('/api/templates');
@@ -61,14 +72,33 @@ export async function uploadImagem(file, tipo = 'produto') {
   return r.json(); // { url }
 }
 
+// Busca a melhor imagem pra cada nome de produto. ANTES chamava o backend
+// local (4020) que tinha cópia duplicada do busca-imagens.js do PromoPage.
+// AGORA chama o backend do PromoPage diretamente — mesma implementação,
+// MESMO cache (cache_busca_imagens table). Benefício: se um lojista busca
+// "Coca-Cola 2L" no PromoPage, depois busca no PromoVideo, cache reaproveita
+// (não consome quota Bing/Google duas vezes).
+//
+// O endpoint do PromoPage é GET ?q=<nome>&limite=1 — uma chamada por nome,
+// em paralelo. Auth via cookie cross-subdomain (em prod) ou CORS dev.
 export async function buscarImagens(nomes) {
-  const r = await fetch('/api/produtos/buscar-imagens', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nomes }),
-  });
-  if (!r.ok) throw new Error('falha na busca de imagens');
-  return r.json(); // { resultados: [{ nome, imagem, fonte }] }
+  const resultados = await Promise.all(nomes.map(async (nome) => {
+    try {
+      const url = `${API_PROMOPAGE}/api/produtos/buscar-imagens?q=${encodeURIComponent(nome)}&limite=1`;
+      const r = await fetch(url, { credentials: 'include' });
+      if (!r.ok) return { nome, imagem: null, fonte: null };
+      const data = await r.json();
+      const primeira = (data.imagens || [])[0];
+      return {
+        nome,
+        imagem: primeira?.url || primeira?.thumbUrl || null,
+        fonte: primeira?.fonte || null,
+      };
+    } catch {
+      return { nome, imagem: null, fonte: null };
+    }
+  }));
+  return { resultados };
 }
 
 export async function criarVideo(payload) {
