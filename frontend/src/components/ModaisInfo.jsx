@@ -54,9 +54,7 @@ export function ModalRecursosPlanos({ aoFechar }) {
 }
 
 const CONTATOS = [
-  { ic: '💬', label: 'WhatsApp', valor: '(00) 00000-0000', href: 'https://wa.me/5500000000000' },
-  { ic: '✉️', label: 'E-mail', valor: 'suporte@promopagevideos.com', href: 'mailto:suporte@promopagevideos.com' },
-  { ic: '📞', label: 'Telefone', valor: '(00) 0000-0000', href: 'tel:+5500000000' },
+  { ic: '✉️', label: 'E-mail', valor: 'atendimento@promopage.com.br', href: 'mailto:atendimento@promopage.com.br' },
   { ic: '🕒', label: 'Horário', valor: 'Seg a Sex, 9h às 18h', href: null },
 ];
 
