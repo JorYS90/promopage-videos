@@ -116,41 +116,47 @@ export function normalizarUrlImagemPP(url) {
 }
 
 export async function buscarImagens(nomes) {
-  const resultados = await Promise.all(nomes.map(async (nome) => {
-    // 1) PRIORIDADE MÁXIMA: populares (banco compartilhado PP+PV)
-    try {
-      const rp = await fetch(
-        `${API_PROMOPAGE}/api/produtos/imagens-populares?q=${encodeURIComponent(nome)}&limite=1`,
-        { credentials: 'include' },
-      );
-      if (rp.ok) {
-        const dp = await rp.json();
-        const popular = (dp.imagens || [])[0];
-        if (popular?.url) {
-          return { nome, imagem: normalizarUrlImagemPP(popular.url), fonte: 'populares' };
-        }
-      }
-    } catch { /* sem popular, segue pro search */ }
-
-    // 2) Fallback: search externo (Bing+OFF+Wikimedia)
-    try {
-      const url = `${API_PROMOPAGE}/api/produtos/buscar-imagens?q=${encodeURIComponent(nome)}&limite=5`;
-      const r = await fetch(url, { credentials: 'include' });
-      if (!r.ok) return { nome, imagem: null, fonte: null };
-      const data = await r.json();
-      const candidatos = data.imagens || [];
-      const melhor = candidatos.find(c => c.score === undefined || c.score >= SCORE_MIN_AUTO);
-      if (!melhor) return { nome, imagem: null, fonte: null, _baixaQualidade: true };
+  // Usa o endpoint /api/produtos/buscar-lote do PromoPage — MESMO pipeline
+  // que o PromoPage usa (cache populares + cache persistente + Bing + OFF +
+  // Wikimedia + ranking 4 sinais + validação de URL). 1 request HTTP em vez
+  // de 2×N anteriormente. ~5-10× mais rápido com cache quente.
+  //
+  // O endpoint aceita "linhas" no formato "Nome R$ X,XX" ou só "Nome".
+  // O parser do backend é tolerante — passar só o nome funciona.
+  try {
+    const r = await fetch(`${API_PROMOPAGE}/api/produtos/buscar-lote`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ linhas: nomes.join('\n') }),
+    });
+    if (!r.ok) {
+      // Fallback: se /buscar-lote falhar (auth, rate limit, etc), retorna vazio.
+      // User adiciona imagem manual depois pelo modal.
+      return { resultados: nomes.map(n => ({ nome: n, imagem: null, fonte: null })) };
+    }
+    const data = await r.json();
+    // Backend retorna { resultados: [{ linhaOriginal, produto: { nome, imagem, codigoBarras, fonte, ... } }] }
+    // Mapeia pro shape esperado aqui: { nome, imagem, fonte }
+    const map = new Map();
+    for (const item of (data.resultados || [])) {
+      if (!item?.produto) continue;
+      map.set((item.linhaOriginal || item.produto.nome || '').toLowerCase(), item.produto);
+    }
+    const resultados = nomes.map(nome => {
+      const p = map.get(nome.toLowerCase()) || null;
+      if (!p) return { nome, imagem: null, fonte: null };
       return {
         nome,
-        imagem: normalizarUrlImagemPP(melhor.url || melhor.thumbUrl || null),
-        fonte: melhor.fonte || null,
+        imagem: normalizarUrlImagemPP(p.imagem || null),
+        fonte: p.fonte || null,
       };
-    } catch {
-      return { nome, imagem: null, fonte: null };
-    }
-  }));
-  return { resultados };
+    });
+    return { resultados };
+  } catch (e) {
+    console.warn('[buscarImagens] /buscar-lote falhou:', e?.message);
+    return { resultados: nomes.map(n => ({ nome: n, imagem: null, fonte: null })) };
+  }
 }
 
 export async function criarVideo(payload) {

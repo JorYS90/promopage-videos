@@ -81,14 +81,22 @@ export default function ModalEditarProdutos({ produtos, maxProdutos = 7, aoMudar
     finally { setProcessando(null); }
   }
 
-  // Híbrido: chroma key (instantâneo p/ fundo branco/cinza) -> IA precisa como fallback.
+  // Híbrido (igual PromoPage): chroma key primeiro (~5ms, p/ fundo branco/cinza
+  // de catálogo) → IA com modelo FAST (~80MB) como fallback. Antes forçava IA
+  // PRECISE (160MB) que demorava 5-10s + congelava UI.
+  //
+  // 3 cenários:
+  //   - Fundo uniforme branco/cinza  → chroma key resolve em ms
+  //   - Fundo complexo               → cai pra IA fast (mais rápida que precise)
+  //   - Imagem cross-origin sem CORS → proxy via PromoPage pra evitar tainted canvas
   async function tirarFundo(idx) {
     const src = produtos[idx]?.imagem;
     if (!src) return;
     setErro('');
     setProcessando(idx);
     try {
-      const blob = await removerFundo(src, { forcarIA: true, modeloIA: 'precise' });
+      // Tenta híbrido: chroma key primeiro, IA fast se chroma falhar
+      const blob = await removerFundo(src, { modeloIA: 'fast' });
       if (!blob) throw new Error('não foi possível remover o fundo');
       const file = new File([blob], 'sem-fundo.png', { type: 'image/png' });
       const { url } = await uploadImagem(file, 'produto');
