@@ -150,7 +150,7 @@ export default function ModalEditarProdutos({ produtos, maxProdutos = 7, aoMudar
                   }}
                   title={p.nome ? 'Clique pra escolher outra imagem (grid de opções + upload do PC)' : 'Digite o nome do produto primeiro'}
                 >
-                  {p.imagem ? <img src={p.imagem} alt="" /> : <div className="sem-img">📦</div>}
+                  {p.imagem ? <img src={normalizarUrlImagem(p.imagem)} alt="" /> : <div className="sem-img">📦</div>}
                   {proc && <div className="overlay-processando">Removendo fundo…</div>}
                   {!proc && <div className="overlay-trocar-grande">{p.imagem ? 'TROCAR IMAGEM' : 'ESCOLHER IMAGEM'}</div>}
                   {p.fundoRemovido && !proc && <span className="badge-sem-fundo">SEM FUNDO</span>}

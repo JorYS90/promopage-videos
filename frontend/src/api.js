@@ -98,6 +98,23 @@ const SCORE_MIN_AUTO = 1;
 // Resultado: depois que user escolhe a foto CERTA pra "Linguiça Seara" uma vez
 // (peso 10 via 'USAR' OU peso 20 via upload), próximas buscas pelo mesmo nome
 // vão DIRETO pra essa foto, sem cair no Bing que devolve Pizza Seara.
+// Normaliza URL retornada pelo backend do PromoPage. Como o PromoVideo roda em
+// videos.promopage.com.br, URLs relativas tipo "/uploads/produtos/x.jpg" iam
+// resolver pra videos.promopage.com.br/uploads/... (não existe). Prefixa com
+// o domínio do PromoPage pra evitar imagens crashadas.
+//
+// Casos:
+//   - "/uploads/..." ou "/api/..." → prefixa API_PROMOPAGE
+//   - URL absoluta (http...) → retorna como veio
+//   - vazia/null → retorna como veio
+export function normalizarUrlImagemPP(url) {
+  if (!url) return url;
+  if (url.startsWith('/uploads/') || url.startsWith('/api/')) {
+    return `${API_PROMOPAGE}${url}`;
+  }
+  return url;
+}
+
 export async function buscarImagens(nomes) {
   const resultados = await Promise.all(nomes.map(async (nome) => {
     // 1) PRIORIDADE MÁXIMA: populares (banco compartilhado PP+PV)
@@ -110,7 +127,7 @@ export async function buscarImagens(nomes) {
         const dp = await rp.json();
         const popular = (dp.imagens || [])[0];
         if (popular?.url) {
-          return { nome, imagem: popular.url, fonte: 'populares' };
+          return { nome, imagem: normalizarUrlImagemPP(popular.url), fonte: 'populares' };
         }
       }
     } catch { /* sem popular, segue pro search */ }
@@ -126,7 +143,7 @@ export async function buscarImagens(nomes) {
       if (!melhor) return { nome, imagem: null, fonte: null, _baixaQualidade: true };
       return {
         nome,
-        imagem: melhor.url || melhor.thumbUrl || null,
+        imagem: normalizarUrlImagemPP(melhor.url || melhor.thumbUrl || null),
         fonte: melhor.fonte || null,
       };
     } catch {

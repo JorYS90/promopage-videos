@@ -1,6 +1,7 @@
 // Painéis de conteúdo por seção. Todos recebem `ctx` (estado + ações do App).
 import { useRef, useState } from 'react';
 import ModalRecortarLogo from './components/ModalRecortarLogo.jsx';
+import { normalizarUrlImagemPP } from './api.js';
 
 // Seletor de voz de locutor (com prévia tocável).
 function VozPicker({ vozes, vozId, onPick }) {
@@ -95,7 +96,7 @@ export function PanelProdutos({ ctx }) {
           {buscandoFotos && <div className="info-box" style={{ marginBottom: 10 }}>🔎 Buscando fotos dos produtos na internet…</div>}
           {produtos.map((p, i) => (
             <div className="meu-produto" key={i} onClick={() => setCena(`produto-${i}`)}>
-              <div className="mp-thumb">{p.imagem ? <img src={p.imagem} alt="" /> : '📦'}</div>
+              <div className="mp-thumb">{p.imagem ? <img src={normalizarUrlImagemPP(p.imagem)} alt="" /> : '📦'}</div>
               <div className="mp-info">
                 <div className="mp-nome">{(p.nome || `Produto ${i + 1}`).toUpperCase()}</div>
                 <div className="mp-preco">{p.preco ? `R$ ${p.preco}${p.unidade ? ' /' + p.unidade : ''}` : 'sem preço'}</div>
