@@ -49,7 +49,45 @@ export default function App() {
   };
 
   const [formato, setFormato] = useState('vertical');
-  const [empresa, setEmpresa] = useState({ nome: '', logo: '', logoFundo: 'transparente', endereco: '', telefone: '', site: '', whatsapp: '', instagram: '', horario: '', dias: '' });
+
+  // === Empresa: persistida por user no localStorage ===
+  // Logo + dados (nome, endereço, telefone, etc) ficam salvos automaticamente.
+  // User não precisa anexar logo de novo a cada sessão. Chave isolada por user
+  // (sufixo :userId) — login diferente = dados diferentes.
+  const EMPRESA_VAZIA = {
+    nome: '', logo: '', logoFundo: 'transparente',
+    endereco: '', telefone: '', site: '',
+    whatsapp: '', instagram: '', horario: '', dias: '',
+  };
+  const chaveEmpresaLs = (userId) => `promovideo:empresa:${userId || 'anon'}`;
+  const carregarEmpresaLs = (userId) => {
+    try {
+      const raw = localStorage.getItem(chaveEmpresaLs(userId));
+      if (!raw) return EMPRESA_VAZIA;
+      return { ...EMPRESA_VAZIA, ...JSON.parse(raw) };
+    } catch { return EMPRESA_VAZIA; }
+  };
+  // Estado inicial: começa com 'anon' (antes do auth carregar); useEffect
+  // abaixo re-popula com os dados do user quando ele loga.
+  const [empresaRaw, setEmpresaRaw] = useState(() => carregarEmpresaLs(null));
+  // Wrap setEmpresa: salva no localStorage automaticamente a cada update.
+  const setEmpresa = (novaOuFn) => {
+    setEmpresaRaw(atual => {
+      const nova = typeof novaOuFn === 'function' ? novaOuFn(atual) : novaOuFn;
+      try {
+        const userId = auth.user?.id || 'anon';
+        localStorage.setItem(chaveEmpresaLs(userId), JSON.stringify(nova));
+      } catch {}
+      return nova;
+    });
+  };
+  const empresa = empresaRaw;
+  // Recarrega empresa quando user muda (login/logout) — cada conta tem suas
+  // próprias informações persistidas (não vaza dados entre contas no mesmo browser).
+  useEffect(() => {
+    setEmpresaRaw(carregarEmpresaLs(auth.user?.id || null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.user?.id]);
   const [produtos, setProdutos] = useState([produtoVazio(), produtoVazio(), produtoVazio()]);
   // narracao começa DESLIGADA durante o refino do vídeo (economiza crédito do ElevenLabs).
   // Religar é só voltar pra true aqui (ou marcar o toggle no painel Textos).
