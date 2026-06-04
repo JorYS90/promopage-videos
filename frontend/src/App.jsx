@@ -8,6 +8,7 @@ import { PanelProdutos, PanelTemas, PanelLogo, PanelEmpresa, PanelTextos, PanelR
 import ModalEditarProdutos from './components/ModalEditarProdutos.jsx';
 import ModalCriarTema from './components/ModalCriarTema.jsx';
 import ModalConfirmarGerar from './components/ModalConfirmarGerar.jsx';
+import { ModalRecursosPlanos, ModalAtendimento } from './components/ModaisInfo.jsx';
 // Modais locais de Recursos/Atendimento removidos — abrem direto no PromoPage.
 import { getTemplates, getTemas, getMusicas, getVozes, uploadImagem, criarVideo, getVideo, getVideoQuota, buscarImagens, excluirTema, getFavoritos, addFavorito, removeFavorito, listarProjetos, criarProjeto, atualizarProjeto, excluirProjeto as excluirProjetoApi } from './api.js';
 import { parsearLista } from './parse-lista.js';
@@ -30,6 +31,9 @@ export default function App() {
   // Cota mensal de vídeos do plano do user. Atualizada após cada geração
   // e no mount (quando user faz login). null = ainda não consultado.
   const [videoQuota, setVideoQuota] = useState(null);
+  // Modais info — abrem dentro do PromoVideo (não redirecionam mais pro PromoPage)
+  const [modalPlanosAberto, setModalPlanosAberto] = useState(false);
+  const [modalAtendAberto, setModalAtendAberto] = useState(false);
 
   // Atualiza a cota quando user muda (login/logout) e ao montar
   useEffect(() => {
@@ -432,8 +436,8 @@ export default function App() {
   return (
     <div className={`app ${painelAberto ? '' : 'painel-fechado'}`}>
       <Topbar
-        aoRecursos={() => window.open(`${URL_PROMOPAGE}/?abrir=planos#recursos-e-planos`, '_blank', 'noopener')}
-        aoAtendimento={() => window.open(`${URL_PROMOPAGE}/?abrir=atendimento#central-atendimento`, '_blank', 'noopener')}
+        aoRecursos={() => setModalPlanosAberto(true)}
+        aoAtendimento={() => setModalAtendAberto(true)}
         aoHome={reset}
         user={auth.user}
         loading={auth.loading}
@@ -524,6 +528,15 @@ export default function App() {
           aoSalvar={aoSalvarTema}
           aoFechar={() => { setCriarTemaAberto(false); setTemaEditando(null); }}
         />
+      )}
+
+      {/* Modais de info (planos REAIS via API + atendimento) — abrem DENTRO do
+          PromoVideo, sem redirecionar pro PromoPage. */}
+      {modalPlanosAberto && (
+        <ModalRecursosPlanos aoFechar={() => setModalPlanosAberto(false)} />
+      )}
+      {modalAtendAberto && (
+        <ModalAtendimento aoFechar={() => setModalAtendAberto(false)} />
       )}
     </div>
   );

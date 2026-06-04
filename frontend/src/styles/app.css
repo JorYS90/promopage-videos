@@ -475,6 +475,89 @@ a.contato-item:hover { border-color: var(--neon); background: #f1f5ff; }
 .contato-valor { font-size: 15px; font-weight: 700; color: var(--texto); }
 @media (max-width: 680px) { .planos-grid, .contato-grid { grid-template-columns: 1fr; } }
 
+/* ============================================================
+   ModalRecursosPlanos (versão PromoVideo com API real)
+   ============================================================ */
+.modal-planos-pv { max-width: 920px !important; }
+
+.mpv-ciclo-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px;
+  margin: 18px auto 6px;
+  background: rgba(15,23,42,0.5);
+  padding: 4px;
+  border-radius: 99px;
+  width: fit-content;
+}
+.mpv-ciclo-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #94a3b8;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.mpv-ciclo-btn:hover { color: #e2e8f0; }
+.mpv-ciclo-btn.ativo {
+  background: linear-gradient(135deg, #1f4ed8, #3b82f6);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(59,130,246,0.4);
+}
+.mpv-ciclo-badge {
+  background: #16a34a;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+
+.mpv-ciclo-hint {
+  margin: 0 0 14px;
+  text-align: center;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.mpv-grid { grid-template-columns: repeat(3, 1fr); margin-top: 8px; }
+
+.mpv-preco-total {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: -4px;
+  margin-bottom: 4px;
+}
+
+.mpv-cota-video {
+  background: rgba(139,92,246,0.1);
+  border: 1px solid rgba(139,92,246,0.3);
+  color: #c4b5fd;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-align: center;
+  margin: 6px 0;
+}
+.mpv-cota-video b { color: #fff; font-size: 15px; }
+.mpv-cota-video.sem-video {
+  background: rgba(148,163,184,0.08);
+  border-color: rgba(148,163,184,0.2);
+  color: #64748b;
+}
+
+@media (max-width: 768px) {
+  .mpv-grid { grid-template-columns: 1fr; }
+  .mpv-ciclo-btn { padding: 7px 12px; font-size: 12px; }
+}
+
 .editar-row { display: grid; grid-template-columns: 26px 150px 1fr 200px 110px; gap: 16px; align-items: start; border: 1px solid var(--borda); border-radius: 12px; padding: 14px; margin-bottom: 12px; background: #fafbfc; }
 .editar-row.arrastando { opacity: .5; }
 .editar-row.drop-alvo { border-color: var(--neon); box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
