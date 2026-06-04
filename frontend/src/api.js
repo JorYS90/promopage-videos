@@ -137,13 +137,20 @@ export async function buscarImagens(nomes) {
 }
 
 export async function criarVideo(payload) {
-  const r = await fetch('/api/videos', {
+  const r = await apiFetch('/api/videos', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
   const data = await r.json();
-  if (!r.ok) throw new Error(data.erro || 'falha ao criar vídeo');
+  if (!r.ok) {
+    // Erro de cota tem .code (QUOTA_EXCEEDED|NO_PLAN) — propaga pra UI tratar.
+    const err = new Error(data.erro || 'falha ao criar vídeo');
+    err.code = data.code;
+    err.cota = data.cota;
+    err.status = r.status;
+    throw err;
+  }
   return data;
 }
 
@@ -151,6 +158,18 @@ export async function getVideo(id) {
   const r = await fetch(`/api/videos/${id}`);
   if (!r.ok) throw new Error('falha ao consultar status');
   return r.json();
+}
+
+// Cota mensal de vídeos do user logado (consulta sem incrementar).
+// Retorna { limite, usado, restante, anoMes, podeGerar, ilimitado }
+export async function getVideoQuota() {
+  try {
+    const r = await apiFetch('/api/me/video-quota');
+    if (!r.ok) return null;
+    return await r.json();
+  } catch {
+    return null;
+  }
 }
 
 // Headers do user logado — em dev, o frontend "diz" quem é (o useAuth gravou

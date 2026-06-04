@@ -15,6 +15,19 @@ const { PROMOPAGE_AUTH_URL, DEV_ALLOW_ADMIN, DEV_TRUST_PP_HEADERS } = require('.
 const CACHE_TTL_MS = 30_000; // 30s — equilibra carga no PromoPage vs frescor
 const cache = new Map(); // cookieHeader -> { user, exp }
 
+// Deriva flags de role pro user vindo do PromoPage (que retorna role_nome).
+// Faz isso AQUI (não no PromoPage) pra manter a API /me genérica e compatível
+// com outros consumidores. Sem mutação se user for null/sem role_nome.
+function enriquecerComRoleFlags(user) {
+  if (!user) return null;
+  const role = user.role_nome || '';
+  return {
+    ...user,
+    isSuperAdmin: role === 'super_admin',
+    isAdmin: role === 'super_admin' || role === 'admin',
+  };
+}
+
 async function validarComPromopage(cookieHeader) {
   if (!cookieHeader) return null;
   const cached = cache.get(cookieHeader);
@@ -28,7 +41,7 @@ async function validarComPromopage(cookieHeader) {
       return null;
     }
     const d = await r.json().catch(() => ({}));
-    const user = d.user || null;
+    const user = enriquecerComRoleFlags(d.user || null);
     cache.set(cookieHeader, { user, exp: Date.now() + CACHE_TTL_MS });
     return user;
   } catch (e) {
@@ -63,7 +76,8 @@ async function lerAuth(req, _res, next) {
   next();
 }
 
-// Middleware: bloqueia (403) se não for admin. Use nas rotas restritas.
+// Middleware: bloqueia (403) se não for admin (admin OU super_admin).
+// Use em rotas administrativas comuns (relatórios, listagens, etc).
 function requireAdmin(req, res, next) {
   if (!req.user?.isAdmin) {
     return res.status(403).json({ erro: 'acesso restrito ao admin (faça login no PromoPage)' });
@@ -71,4 +85,16 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-module.exports = { lerAuth, requireAdmin };
+// Middleware: bloqueia (403) se não for super_admin.
+// Use em rotas DESTRUTIVAS / de modelagem de conteúdo (criar/editar/excluir temas,
+// modificar templates, etc). Admin comum NÃO passa — só o dono do sistema.
+function requireSuperAdmin(req, res, next) {
+  if (!req.user?.isSuperAdmin) {
+    return res.status(403).json({
+      erro: 'acesso restrito ao super_admin (apenas o administrador do sistema)',
+    });
+  }
+  next();
+}
+
+module.exports = { lerAuth, requireAdmin, requireSuperAdmin };

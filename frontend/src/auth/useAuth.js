@@ -28,6 +28,8 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   // Carrega user logado via cookie (cross-subdomain em prod).
+  // Deriva isAdmin/isSuperAdmin do role_nome — backend retorna a string,
+  // frontend trabalha com booleanos pra checagens de UI.
   const carregar = useCallback(async () => {
     try {
       const r = await fetch(`${API_AUTH_BASE}/api/auth/me`, {
@@ -35,7 +37,13 @@ export function useAuth() {
       });
       if (r.ok) {
         const d = await r.json();
-        setUser(d.user);
+        const u = d.user || null;
+        if (u) {
+          const role = u.role_nome || '';
+          u.isSuperAdmin = role === 'super_admin';
+          u.isAdmin = role === 'super_admin' || role === 'admin';
+        }
+        setUser(u);
       } else {
         setUser(null);
       }

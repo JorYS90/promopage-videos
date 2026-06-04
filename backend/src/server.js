@@ -18,9 +18,10 @@ const { enriquecerTextos } = require('./ia/texto');
 const { gerarNarracao, vozAtiva } = require('./ia/voz');
 const { listarVozes } = require('./vozes');
 const { analisarBalaoInterior } = require('./balao');
-const { lerAuth, requireAdmin } = require('./auth');
+const { lerAuth, requireAdmin, requireSuperAdmin } = require('./auth');
 const favoritosDb = require('./favoritos-db');
 const projetosDb = require('./projetos-db');
+const quota = require('./quota');
 
 const app = express();
 
@@ -142,13 +143,31 @@ app.post('/api/upload', upload.single('imagem'), (req, res) => {
   res.json({ url, area });
 });
 
-app.post('/api/videos', (req, res) => {
+app.post('/api/videos', async (req, res) => {
   let props;
   try {
     props = normalizar(req.body);
   } catch (err) {
     const msg = err?.errors?.map((e) => e.message).join('; ') || err.message;
     return res.status(400).json({ erro: msg });
+  }
+
+  // CHECK + INCREMENT da cota mensal de vídeos. Faz isso ANTES de enfileirar
+  // pro user não desperdiçar tempo esperando pra depois ver "limite excedido".
+  // Single source of truth: PromoPage tem o DB; aqui só repassa cookie.
+  // Não-logado: passa sem cota (mas o frontend já deve forçar login antes).
+  if (req.user?.id) {
+    const q = await quota.consumir(req);
+    if (!q.ok) {
+      return res.status(q.status || 429).json({
+        erro: q.mensagem || 'Limite mensal atingido.',
+        code: q.code,
+        cota: { limite: q.limite, usado: q.usado, restante: q.restante },
+      });
+    }
+    // Anota cota retornada pra logs/debug
+    res.set('X-Video-Quota-Used', String(q.usado || ''));
+    res.set('X-Video-Quota-Limit', String(q.limite || ''));
   }
 
   // Quais textos o usuário forneceu manualmente (pra não sobrescrever com IA).
@@ -193,6 +212,16 @@ app.get('/api/videos/:id', (req, res) => {
 
 app.get('/api/videos', (req, res) => {
   res.json(jobsStore.listar().map(jobsStore.publico));
+});
+
+// Status da cota de vídeos do user (proxy pro PromoPage).
+// Frontend usa pra mostrar "X/30 vídeos usados este mês".
+app.get('/api/me/video-quota', async (req, res) => {
+  if (!req.user?.id) {
+    return res.json({ limite: 0, usado: 0, restante: 0, podeGerar: false, semLogin: true });
+  }
+  const status = await quota.status(req);
+  res.json(status);
 });
 
 // Busca de imagens MIGRADA pro backend do PromoPage (eliminamos duplicação:
@@ -254,18 +283,21 @@ app.delete('/api/projetos/:id', requireUser, (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/temas', requireAdmin, (req, res) => {
+// Gestão de temas customizados — RESTRITO A SUPER_ADMIN.
+// Admin comum pode usar todos os temas, mas só super_admin cria/edita/exclui
+// (temas afetam todos os usuários — risco de quebrar produção).
+app.post('/api/temas', requireSuperAdmin, (req, res) => {
   if (!req.body?.nome || !String(req.body.nome).trim()) {
     return res.status(400).json({ erro: 'nome do tema é obrigatório' });
   }
   res.status(201).json(temasDb.criar(req.body));
 });
-app.put('/api/temas/:id', requireAdmin, (req, res) => {
+app.put('/api/temas/:id', requireSuperAdmin, (req, res) => {
   const t = temasDb.atualizar(req.params.id, req.body || {});
   if (!t) return res.status(404).json({ erro: 'tema não encontrado ou não editável (built-in)' });
   res.json(t);
 });
-app.delete('/api/temas/:id', requireAdmin, (req, res) => {
+app.delete('/api/temas/:id', requireSuperAdmin, (req, res) => {
   const ok = temasDb.remover(req.params.id);
   if (!ok) return res.status(404).json({ erro: 'tema não encontrado ou não editável (built-in)' });
   res.json({ ok: true });

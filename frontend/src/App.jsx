@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Topbar from './components/Topbar.jsx';
+import VideoQuotaBadge from './components/VideoQuotaBadge.jsx';
 import { useAuth } from './auth/useAuth.js';
 import IconBar from './components/IconBar.jsx';
 import Canvas from './components/Canvas.jsx';
@@ -8,7 +9,7 @@ import ModalEditarProdutos from './components/ModalEditarProdutos.jsx';
 import ModalCriarTema from './components/ModalCriarTema.jsx';
 import ModalConfirmarGerar from './components/ModalConfirmarGerar.jsx';
 // Modais locais de Recursos/Atendimento removidos — abrem direto no PromoPage.
-import { getTemplates, getTemas, getMusicas, getVozes, uploadImagem, criarVideo, getVideo, buscarImagens, excluirTema, getFavoritos, addFavorito, removeFavorito, listarProjetos, criarProjeto, atualizarProjeto, excluirProjeto as excluirProjetoApi } from './api.js';
+import { getTemplates, getTemas, getMusicas, getVozes, uploadImagem, criarVideo, getVideo, getVideoQuota, buscarImagens, excluirTema, getFavoritos, addFavorito, removeFavorito, listarProjetos, criarProjeto, atualizarProjeto, excluirProjeto as excluirProjetoApi } from './api.js';
 import { parsearLista } from './parse-lista.js';
 import { removerFundo } from './remover-fundo.js';
 
@@ -26,6 +27,22 @@ export default function App() {
   const [vozes, setVozes] = useState([]);
   const [temaSelecionado, setTemaSelecionado] = useState(null);
   const [secao, setSecao] = useState('produtos');
+  // Cota mensal de vídeos do plano do user. Atualizada após cada geração
+  // e no mount (quando user faz login). null = ainda não consultado.
+  const [videoQuota, setVideoQuota] = useState(null);
+
+  // Atualiza a cota quando user muda (login/logout) e ao montar
+  useEffect(() => {
+    if (!auth.user) { setVideoQuota(null); return; }
+    let vivo = true;
+    getVideoQuota().then(q => { if (vivo) setVideoQuota(q); });
+    return () => { vivo = false; };
+  }, [auth.user?.id]);
+
+  const recarregarCota = () => {
+    if (!auth.user) return;
+    getVideoQuota().then(q => setVideoQuota(q));
+  };
 
   const [formato, setFormato] = useState('vertical');
   const [empresa, setEmpresa] = useState({ nome: '', logo: '', logoFundo: 'transparente', endereco: '', telefone: '', site: '', whatsapp: '', instagram: '', horario: '', dias: '' });
@@ -60,16 +77,22 @@ export default function App() {
   // URL do PromoPage — usada pra abrir "Recursos e Planos" e "Atendimento" lá
   // (única fonte da verdade pros dois apps — sem duplicar conteúdo).
   const URL_PROMOPAGE = import.meta.env.PROD ? 'https://promopage.com.br' : 'http://localhost:5173';
-  // Modo admin: ?admin=1 na URL liga (e fica salvo); ?admin=0 desliga. Só o admin
-  // vê "Criar tema" e os botões de editar/excluir tema.
-  const [isAdmin] = useState(() => {
+  // Modo admin: derivado do user logado (super_admin pode criar/editar/excluir
+  // temas — afeta TODOS os clientes; admin comum não tem essa permissão).
+  // Override de debug via ?admin=1 na URL (só funciona em dev — backend valida).
+  const debugAdmin = (() => {
     try {
       const p = new URLSearchParams(window.location.search);
       if (p.get('admin') === '1') localStorage.setItem('pp_admin', '1');
       if (p.get('admin') === '0') localStorage.removeItem('pp_admin');
       return localStorage.getItem('pp_admin') === '1';
     } catch { return false; }
-  });
+  })();
+  // isAdmin no PromoVideo = super_admin OU override de debug (dev only).
+  // Em prod o backend rejeita qualquer chamada de criar/editar/excluir tema
+  // que não venha de um super_admin REAL — o override só esconde a UI, não
+  // burla validação. (Backend usa requireSuperAdmin nos endpoints de tema.)
+  const isAdmin = !!auth.user?.isSuperAdmin || debugAdmin;
   const [temaEditando, setTemaEditando] = useState(null);
   // Favoritos de tema (por usuário, do PromoPage). Recarrega quando o user muda.
   const [favoritos, setFavoritos] = useState(new Set());
@@ -258,8 +281,24 @@ export default function App() {
       vozId: textos.vozId || undefined,
       regras,
     };
-    try { const criado = await criarVideo(payload); setJob(criado); setSecao('gerar'); iniciarPolling(criado.id); }
-    catch (e) { setErro(e.message); }
+    try {
+      const criado = await criarVideo(payload);
+      setJob(criado);
+      setSecao('gerar');
+      iniciarPolling(criado.id);
+      recarregarCota(); // backend incrementou — atualiza badge "X/30"
+    } catch (e) {
+      // Erro de cota → mensagem clara + CTA pro upgrade
+      if (e.code === 'QUOTA_EXCEEDED') {
+        const { limite, usado } = e.cota || {};
+        setErro(`Você já usou ${usado}/${limite} vídeos este mês. Faça upgrade pra "Ilimitado + 100 Vídeos" ou aguarde o próximo mês.`);
+        recarregarCota();
+      } else if (e.code === 'NO_PLAN') {
+        setErro('Seu plano não inclui o PromoVideo. Assine "Ilimitado + 30 Vídeos" ou "+100 Vídeos" no PromoPage.');
+      } else {
+        setErro(e.message);
+      }
+    }
   }
 
   function iniciarPolling(id) {
@@ -400,6 +439,11 @@ export default function App() {
         loading={auth.loading}
         aoEntrar={auth.abrirLoginPromoPage}
         aoLogout={auth.logout}
+      />
+      <VideoQuotaBadge
+        quota={videoQuota}
+        user={auth.user}
+        aoUpgrade={() => window.open(`${URL_PROMOPAGE}/?abrir=planos#recursos-e-planos`, '_blank', 'noopener')}
       />
       <IconBar ativa={secao} aoMudar={(s) => { setSecao(s); setPainelAberto(true); }} />
       <div className="painel-conteudo">
