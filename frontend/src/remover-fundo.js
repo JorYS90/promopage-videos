@@ -55,9 +55,18 @@ async function removerFundoChromaKey(blob, opts = {}) {
   ctx.drawImage(img, 0, 0);
 
   const fundo = analisarFundo(ctx, W, H);
-  if (fundo.variacao > 25) return { sucesso: false, motivo: 'fundo-nao-uniforme', variacao: fundo.variacao };
+  // Threshold relaxado (espelha PromoPage 2026-06-04): era 25, agora 50 — fotos
+  // com sombra suave ou JPG comprimido têm variação 25-50; chroma key agora
+  // tenta com tolerância maior em vez de desistir.
+  if (fundo.variacao > 50) return { sucesso: false, motivo: 'fundo-nao-uniforme', variacao: fundo.variacao };
 
-  const tolBase = opts.tolerancia ?? (fundo.variacao < 5 ? 24 : 18);
+  // Tolerância escalonada pela variação do fundo
+  const tolBase = opts.tolerancia ?? (
+    fundo.variacao < 5  ? 24 :
+    fundo.variacao < 15 ? 18 :
+    fundo.variacao < 30 ? 28 :
+                          38
+  );
   const tolNucleo = opts.tolNucleo ?? Math.max(80, tolBase * 3.5);
   const data = ctx.getImageData(0, 0, W, H);
   const px = data.data;
